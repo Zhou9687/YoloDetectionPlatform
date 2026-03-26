@@ -1,0 +1,59 @@
+{
+  "name": "yolov8-detection-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Electron desktop shell for YOLOv8 detection platform",
+  "main": "src/main.cjs",
+  "scripts": {
+    "dev": "electron .",
+    "build:frontend": "npm --prefix ../frontend run build",
+    "build:backend": "mvn -f ../yolov8-detection/pom.xml -DskipTests package",
+    "prepare:app": "npm run build:frontend && npm run build:backend",
+    "prepare:jre": "node ./scripts/prepare-jre.cjs",
+    "dist:win": "npm run prepare:app && npm run prepare:jre && set ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/&& npm exec electron-builder -- --win nsis"
+  },
+  "devDependencies": {
+    "7zip-bin": "^5.2.0",
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.zhou.yolov8.desktop",
+    "productName": "YOLOv8 Detection Desktop",
+    "asar": true,
+    "files": [
+      "src/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime/win-jre17",
+        "to": "runtime/win-jre17"
+      },
+      {
+        "from": "../frontend/dist",
+        "to": "frontend-dist"
+      },
+      {
+        "from": "../yolov8-detection/target",
+        "to": "backend",
+        "filter": [
+          "*.jar",
+          "!*.jar.original"
+        ]
+      },
+      {
+        "from": "../yolov8-detection/scripts",
+        "to": "backend/scripts"
+      }
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        "nsis"
+      ]
+    }
+  }
+}

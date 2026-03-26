@@ -1,0 +1,8 @@
+yolov8-detection/target/
+frontend/node_modules/
+frontend/dist/
+frontend/.npm-cache/
+desktop/node_modules/
+desktop/dist/
+.npm-cache/
+node_modules/

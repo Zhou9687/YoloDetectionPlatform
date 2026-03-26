@@ -1,0 +1,33 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://127.0.0.1:3306/yolo_detection?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
+  main:
+    headless: false
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+yolo:
+  workspace: data
+  python-command: D:/AppDownload/Anaconda3/envs/yolov8/python.exe
+  detect-script: scripts/yolov8_runner.py
+  train-script: scripts/yolov8_runner.py
+  model-path: scripts/ultralytics-main/yolov8n.pt
+  conf: 0.05
+  iou: 0.45
+  device: "0"
+  training:
+    migration:
+      import-legacy-json: true
+  dataset-search-roots:
+    - D:/datasets

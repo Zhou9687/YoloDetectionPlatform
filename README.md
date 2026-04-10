@@ -1,6 +1,7 @@
 # YOLOv8 Detection (Spring Boot + Vue)
 
 本项目已打通「图片标注 -> 数据集构建 -> 训练任务 -> 检测预测」完整流程，并新增登录鉴权与账号管理。
+npm --prefix D:\ProjectCode\IDEA\yolo\frontend run dev
 
 - 后端：Spring Boot (`8081`)
 - 前端：Vue3 + Vite (`5173`)

@@ -10,8 +10,49 @@ CREATE TABLE IF NOT EXISTS training_jobs (
     created_at TIMESTAMP(6) NOT NULL,
     finished_at TIMESTAMP(6) NULL,
     message LONGTEXT NULL,
-    best_model_path VARCHAR(1024) NULL
+    best_model_path VARCHAR(1024) NULL,
+    precision_score DOUBLE NULL,
+    recall_score DOUBLE NULL,
+    map50_score DOUBLE NULL,
+    map95_score DOUBLE NULL
 );
+
+-- Backward-compatible migration for existing DBs (works on old MySQL versions without ADD COLUMN IF NOT EXISTS).
+SET @col_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'training_jobs' AND COLUMN_NAME = 'precision_score'
+);
+SET @ddl = IF(@col_exists = 0, 'ALTER TABLE training_jobs ADD COLUMN precision_score DOUBLE NULL', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'training_jobs' AND COLUMN_NAME = 'recall_score'
+);
+SET @ddl = IF(@col_exists = 0, 'ALTER TABLE training_jobs ADD COLUMN recall_score DOUBLE NULL', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'training_jobs' AND COLUMN_NAME = 'map50_score'
+);
+SET @ddl = IF(@col_exists = 0, 'ALTER TABLE training_jobs ADD COLUMN map50_score DOUBLE NULL', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @col_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'training_jobs' AND COLUMN_NAME = 'map95_score'
+);
+SET @ddl = IF(@col_exists = 0, 'ALTER TABLE training_jobs ADD COLUMN map95_score DOUBLE NULL', 'SELECT 1');
+PREPARE stmt FROM @ddl;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS image_annotations (
     image_id VARCHAR(64) PRIMARY KEY,

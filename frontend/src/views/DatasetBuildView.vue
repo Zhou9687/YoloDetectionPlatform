@@ -4,7 +4,7 @@
     <label>数据集名称</label>
     <input v-model="datasetName" placeholder="例如: my-yolo-dataset" />
 
-    <label>保存路径（可选，留空默认 data/datasets）</label>
+    <label>保存路径（可选，作为父目录，系统会在其下新建“数据集名称”文件夹）</label>
     <DirectoryPicker v-model="outputPath" placeholder="例如: D:/datasets" />
 
     <label>验证集比例（val）</label>
@@ -20,9 +20,11 @@
     <p class="muted">将生成 train/val/test（每个目录都含 imgs 与 labels）和 data.yaml。</p>
   </section>
 
-  <section class="card" v-if="resultJson">
+  <section class="card" v-if="buildResult">
     <h4>构建结果</h4>
-    <pre>{{ resultJson }}</pre>
+    <p class="muted">状态：{{ buildResult.success ? "构建成功" : "构建失败" }}</p>
+    <p class="muted">数据集位置：{{ buildResult.datasetPath || "-" }}</p>
+    <p v-if="buildResult.message" class="muted">说明：{{ buildResult.message }}</p>
   </section>
 </template>
 
@@ -35,7 +37,7 @@ const datasetName = ref(`dataset-${Date.now()}`);
 const outputPath = ref("");
 const valRatio = ref(0.3);
 const testRatio = ref(0.1);
-const resultJson = ref("");
+const buildResult = ref(null);
 
 async function handleBuild() {
   try {
@@ -46,9 +48,17 @@ async function handleBuild() {
       valRatio: valRatio.value,
       testRatio: testRatio.value
     });
-    resultJson.value = JSON.stringify(result, null, 2);
+    buildResult.value = {
+      success: true,
+      datasetPath: result?.datasetPath || "",
+      message: ""
+    };
   } catch (error) {
-    resultJson.value = `构建失败: ${error.message}`;
+    buildResult.value = {
+      success: false,
+      datasetPath: "",
+      message: error.message
+    };
   }
 }
 
@@ -57,7 +67,7 @@ function resetForm() {
   outputPath.value = "";
   valRatio.value = 0.3;
   testRatio.value = 0.1;
-  resultJson.value = "";
+  buildResult.value = null;
 }
 </script>
 

@@ -144,6 +144,10 @@ public class TrainingService {
             if (best != null) {
                 job.setBestModelPath(String.valueOf(best));
             }
+            job.setPrecision(asDouble(trainResult.get("precision")));
+            job.setRecall(asDouble(trainResult.get("recall")));
+            job.setMap50(asDouble(trainResult.get("map50")));
+            job.setMap95(asDouble(trainResult.get("map95")));
         } catch (Exception ex) {
             job.setStatus(TrainingJobStatus.FAILED);
             job.setProgress(100);
@@ -240,6 +244,10 @@ public class TrainingService {
         entity.setFinishedAt(job.getFinishedAt());
         entity.setMessage(job.getMessage());
         entity.setBestModelPath(job.getBestModelPath());
+        entity.setPrecision(job.getPrecision());
+        entity.setRecall(job.getRecall());
+        entity.setMap50(job.getMap50());
+        entity.setMap95(job.getMap95());
         return entity;
     }
 
@@ -257,6 +265,10 @@ public class TrainingService {
         job.setFinishedAt(entity.getFinishedAt());
         job.setMessage(entity.getMessage());
         job.setBestModelPath(entity.getBestModelPath());
+        job.setPrecision(entity.getPrecision());
+        job.setRecall(entity.getRecall());
+        job.setMap50(entity.getMap50());
+        job.setMap95(entity.getMap95());
         return job;
     }
 
@@ -314,5 +326,19 @@ public class TrainingService {
             return "Dataset path not found. " + tips;
         }
         return "Dataset path not found. tried=" + String.join(" | ", candidates) + ". " + tips;
+    }
+
+    private Double asDouble(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Number number) {
+            return number.doubleValue();
+        }
+        try {
+            return Double.parseDouble(String.valueOf(raw));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }

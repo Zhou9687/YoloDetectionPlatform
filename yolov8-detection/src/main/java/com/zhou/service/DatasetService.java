@@ -40,8 +40,7 @@ public class DatasetService {
     }
 
     public Map<String, Object> buildDataset(DatasetBuildRequest request) throws IOException {
-        Path outputBase = resolveOutputBase(request.outputPath(), request.outputPreset());
-        Path root = outputBase.resolve(request.datasetName()).toAbsolutePath().normalize();
+        Path root = resolveDatasetRoot(request.outputPath(), request.outputPreset(), request.datasetName());
 
         Path trainImgs = root.resolve("train/images");
         Path trainLabels = root.resolve("train/labels");
@@ -95,8 +94,11 @@ public class DatasetService {
 
         Instant now = Instant.now();
         Map<String, Object> response = new HashMap<>();
+        String outputPreset = (request.outputPath() == null || request.outputPath().isBlank())
+                ? normalizePreset(request.outputPreset())
+                : "CUSTOM_PATH";
         response.put("datasetPath", root.toString());
-        response.put("outputPreset", normalizePreset(request.outputPreset()));
+        response.put("outputPreset", outputPreset);
         response.put("trainCount", all.size());
         response.put("valCount", valSet.size());
         response.put("testCount", testSet.size());
@@ -116,6 +118,14 @@ public class DatasetService {
         datasetBuildRecordRepository.save(record);
 
         return response;
+    }
+
+    private Path resolveDatasetRoot(String outputPath, String outputPreset, String datasetName) {
+        Path outputBase = resolveOutputBase(outputPath, outputPreset);
+        return outputBase
+                .resolve(datasetName)
+                .toAbsolutePath()
+                .normalize();
     }
 
     private Path resolveOutputBase(String outputPath, String outputPreset) {

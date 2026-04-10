@@ -59,10 +59,7 @@
     </div>
   </section>
 
-  <section class="card" v-if="resultJson">
-    <h4>预测结果 JSON</h4>
-    <pre>{{ resultJson }}</pre>
-  </section>
+
 </template>
 
 <script setup>

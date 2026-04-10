@@ -11,7 +11,7 @@ public class YoloProperties {
     private String pythonCommand = "python";
     private String detectScript = "scripts/mock_yolo.py";
     private String trainScript = "scripts/mock_yolo.py";
-    private String modelPath = "scripts/ultralytics-main/yolov8n.pt";
+    private String modelPath = "D:/ProjectCode/IDEA/yolo/yolov8n.pt";
     private double conf = 0.12;
     private double iou = 0.45;
     private String device = "cpu";

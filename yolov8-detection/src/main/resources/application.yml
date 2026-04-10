@@ -22,7 +22,7 @@ yolo:
   python-command: D:/AppDownload/Anaconda3/envs/yolov8/python.exe
   detect-script: scripts/yolov8_runner.py
   train-script: scripts/yolov8_runner.py
-  model-path: scripts/ultralytics-main/yolov8n.pt
+  model-path: D:/ProjectCode/IDEA/yolo/yolov8n.pt
   conf: 0.05
   iou: 0.45
   device: "0"

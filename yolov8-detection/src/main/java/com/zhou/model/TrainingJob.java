@@ -15,6 +15,10 @@ public class TrainingJob {
     private Instant finishedAt;
     private String message;
     private String bestModelPath;
+    private Double precision;
+    private Double recall;
+    private Double map50;
+    private Double map95;
 
     public String getJobId() {
         return jobId;
@@ -110,5 +114,37 @@ public class TrainingJob {
 
     public void setBestModelPath(String bestModelPath) {
         this.bestModelPath = bestModelPath;
+    }
+
+    public Double getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(Double precision) {
+        this.precision = precision;
+    }
+
+    public Double getRecall() {
+        return recall;
+    }
+
+    public void setRecall(Double recall) {
+        this.recall = recall;
+    }
+
+    public Double getMap50() {
+        return map50;
+    }
+
+    public void setMap50(Double map50) {
+        this.map50 = map50;
+    }
+
+    public Double getMap95() {
+        return map95;
+    }
+
+    public void setMap95(Double map95) {
+        this.map95 = map95;
     }
 }

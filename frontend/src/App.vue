@@ -43,7 +43,7 @@
     </div>
   </div>
 
-  <div v-if="showRenameDialog" class="dialog-mask" @click.self="closeDialogs">
+  <div v-if="showShell && showRenameDialog" class="dialog-mask" @click.self="closeDialogs">
     <section class="dialog-card">
       <h4>修改账户名称</h4>
       <label>当前账号</label>
@@ -58,7 +58,7 @@
     </section>
   </div>
 
-  <div v-if="showPasswordDialog" class="dialog-mask" @click.self="closeDialogs">
+  <div v-if="showShell && showPasswordDialog" class="dialog-mask" @click.self="closeDialogs">
     <section class="dialog-card">
       <h4>修改密码</h4>
       <label>原密码</label>
@@ -75,7 +75,7 @@
     </section>
   </div>
 
-  <RouterView v-else />
+  <RouterView v-if="!showShell" />
 </template>
 
 <script setup>

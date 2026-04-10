@@ -10,23 +10,52 @@ $FrontendDir = Join-Path $ProjectRoot "frontend"
 $NpmCmd = "D:\Java\node\npm.cmd"
 
 function Get-ListeningPids([int]$Port) {
-  $lines = netstat -ano | Select-String ":$Port" | Select-String "LISTENING"
   $ids = @()
-  foreach ($line in $lines) {
-    $parts = ($line.ToString() -split "\s+") | Where-Object { $_ -ne "" }
-    if ($parts.Count -lt 5) { continue }
-    $procId = $parts[-1]
-    if ($procId -match "^\d+$") {
-      $ids += [int]$procId
+
+  # Prefer native TCP query when available.
+  try {
+    $listeners = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction Stop
+    foreach ($listener in $listeners) {
+      if ($listener.OwningProcess -gt 0) {
+        $ids += [int]$listener.OwningProcess
+      }
+    }
+  } catch {
+    # Fallback to netstat parsing for environments where Get-NetTCPConnection is unavailable.
+    $lines = netstat -ano | Select-String "LISTENING"
+    $pattern = "^\s*TCP\s+[^\s]+:$Port\s+[^\s]+\s+LISTENING\s+(\d+)\s*$"
+    foreach ($line in $lines) {
+      $m = [regex]::Match($line.ToString(), $pattern)
+      if ($m.Success) {
+        $ids += [int]$m.Groups[1].Value
+      }
     }
   }
+
   return $ids | Select-Object -Unique
 }
 
 function Stop-PortProcess([int]$Port) {
   $pids = Get-ListeningPids -Port $Port
+  if ($pids.Count -eq 0) {
+    Write-Host "[startup] Port $Port is free."
+    return
+  }
+
   foreach ($procId in $pids) {
     Write-Host "[startup] Kill PID=$procId on port $Port"
+    try {
+      Stop-Process -Id $procId -Force -ErrorAction Stop
+    } catch {
+      taskkill /PID $procId /F *> $null
+    }
+  }
+
+  # Second pass in case child processes quickly rebind the same port.
+  Start-Sleep -Milliseconds 400
+  $remain = Get-ListeningPids -Port $Port
+  foreach ($procId in $remain) {
+    Write-Host "[startup] Force kill remaining PID=$procId on port $Port"
     taskkill /PID $procId /F *> $null
   }
 }
@@ -67,6 +96,10 @@ function Wait-BackendReady([int]$Port, [int]$TimeoutSec, $BackendProcess) {
 Write-Host "[startup] Project root: $ProjectRoot"
 Stop-PortProcess -Port $BackendPort
 Ensure-PortFree -Port $BackendPort
+
+# Also free the frontend dev-server port to avoid Vite startup failure.
+Stop-PortProcess -Port $FrontendPort
+Ensure-PortFree -Port $FrontendPort
 
 Write-Host "[startup] Starting backend..."
 $backendProc = Start-Process -FilePath "powershell.exe" -ArgumentList @(

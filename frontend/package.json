@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "serve": "vite",
+    "dev": "vite --port 5173 --strictPort",
+    "serve": "vite --port 5173 --strictPort",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -31,12 +31,17 @@
     <p v-if="statusText" class="muted">{{ statusText }}</p>
     <p v-if="jobId" class="muted">任务ID: {{ jobId }}</p>
     <p v-if="job" class="muted">训练进度: {{ job.progress }}%</p>
-    <p v-if="job?.bestModelPath" class="muted">权重输出: {{ job.bestModelPath }}</p>
   </section>
 
-  <section class="card" v-if="jobJson">
+  <section class="card" v-if="job">
     <h4>任务状态</h4>
-    <pre>{{ jobJson }}</pre>
+    <p class="muted">状态：{{ job.status === "SUCCESS" ? "训练成功" : job.status === "FAILED" ? "训练失败" : "训练中" }}</p>
+    <p class="muted">权重文件：{{ job.bestModelPath || "-" }}</p>
+    <p class="muted">Precision：{{ formatMetric(job.precision) }}</p>
+    <p class="muted">Recall：{{ formatMetric(job.recall) }}</p>
+    <p class="muted">mAP50：{{ formatMetric(job.map50) }}</p>
+    <p class="muted">mAP50-95：{{ formatMetric(job.map95) }}</p>
+    <p v-if="job.status === 'FAILED' && job.message" class="muted">失败原因：{{ job.message }}</p>
   </section>
 </template>
 
@@ -51,16 +56,21 @@ const epochs = ref(50);
 const batch = ref(16);
 const conf = ref(0.12);
 const jobId = ref("");
-const jobJson = ref("");
 const job = ref(null);
 const starting = ref(false);
 const statusText = ref("");
 let pollTimer = null;
 
+function formatMetric(value) {
+  if (value == null || Number.isNaN(Number(value))) {
+    return "-";
+  }
+  return Number(value).toFixed(4);
+}
+
 async function startJob() {
   if (!datasetPath.value.trim()) {
     statusText.value = "请先填写数据集目录（包含 data.yaml）";
-    jobJson.value = "";
     return;
   }
 
@@ -76,13 +86,16 @@ async function startJob() {
     );
     jobId.value = created.jobId;
     job.value = created;
-    jobJson.value = JSON.stringify(created, null, 2);
     statusText.value = "任务已提交，正在轮询状态";
     await refreshJob();
     startPolling();
   } catch (error) {
     statusText.value = "启动失败";
-    jobJson.value = `启动失败: ${error.message}`;
+    job.value = {
+      status: "FAILED",
+      bestModelPath: "",
+      message: error.message
+    };
   } finally {
     starting.value = false;
   }
@@ -93,7 +106,6 @@ async function refreshJob() {
   try {
     const latest = await getTrainingJob(jobId.value);
     job.value = latest;
-    jobJson.value = JSON.stringify(latest, null, 2);
     if (latest.status === "SUCCESS" || latest.status === "FAILED") {
       statusText.value = latest.status === "SUCCESS" ? "训练完成" : "训练失败";
       stopPolling();
@@ -102,7 +114,11 @@ async function refreshJob() {
     }
   } catch (error) {
     statusText.value = "查询失败";
-    jobJson.value = `查询失败: ${error.message}`;
+    job.value = {
+      status: "FAILED",
+      bestModelPath: "",
+      message: error.message
+    };
     stopPolling();
   }
 }
@@ -127,7 +143,6 @@ function resetForm() {
   batch.value = 16;
   conf.value = 0.12;
   jobId.value = "";
-  jobJson.value = "";
   job.value = null;
   starting.value = false;
   statusText.value = "";
